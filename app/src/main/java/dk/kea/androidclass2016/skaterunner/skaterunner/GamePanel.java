@@ -16,12 +16,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 {
 
     //Dimenensions of our game
-    public static final int WIDTH = 1200;
-    public static final int HEIGHT = 602;
+    public static final int WIDTH = 600;
+    public static final int HEIGHT = 300;
+    public static final int MOVESPEED = -5;
 
     //reference
     private MainThread thread;
     private Background bg;
+    private Player pl;
 
     //constructor (automatically called when you create/construct the object)
     public GamePanel(Context context)
@@ -43,14 +45,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder)
     {
         //instatiate, get the image and pass it into the Background class constructor
-        bg = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.sktbg));
+        bg = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.skatebg));
+        pl = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.player), 65, 20, 4);
 
         //will make the image slowly move off the screen
-        bg.setVector(-5);
+
 
         //we can safely start the game loop
         thread.setRunning(true);
         thread.start();
+
     }
 
     @Override
@@ -84,15 +88,46 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     }
 
     @Override
+    //This is going to handle touch events.(listen for touch events on the screen).
     public boolean onTouchEvent(MotionEvent event)
     {
+        //If you press down on the screen
+        if (event.getAction() == MotionEvent.ACTION_DOWN)
+        {
+            //This is the first time pressing down, which means the player is not playing yet.
+            if (!pl.getPlaying())
+            {
+                pl.setPlaying(true);
+            }
+            //If the player is already playing.
+            else
+            {
+                pl.setForward(true);
+            }
+            return true;
+        }
+
+        //Listen for the second event, when you release your finger off the phone
+        if (event.getAction() == MotionEvent.ACTION_UP)
+        {
+            //you are no longer going up, so set it to false
+            pl.setForward(false);
+            return true;
+        }
+
         return super.onTouchEvent(event);
     }
 
     public void update()
     {
-        //update the background
-        bg.update();
+        //We are only going to update the background, if the player is playing
+        if (pl.getPlaying())
+        {
+            //update the background
+            bg.update();
+            //only update the player, if the player is playing.
+            pl.update();
+        }
     }
 
     //we want to draw the background
@@ -105,8 +140,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         //scale the image for all devices
         //getWidth() and getHeight(), gives us the width/height
         //of the entire phone screen(surfaceView)
-        final float scaleFactorX = getWidth() / WIDTH;
-        final float scaleFactorY = getHeight() / HEIGHT;
+        final float scaleFactorX = getWidth() / (WIDTH * 1.f);
+        final float scaleFactorY = getHeight() / (HEIGHT * 1.f);
         if (canvas != null)
         {
             //Before we scale, we create a savedState for our canvas
@@ -115,6 +150,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             canvas.scale(scaleFactorX, scaleFactorY);
             //then we draw the background
             bg.draw(canvas);
+            //draw the player
+            pl.draw(canvas);
             //now we return to the savedState(the unscaled state), because if we don't
             //it will just keep scaling, everytime we call the draw method.
             canvas.restoreToCount(savedState);
