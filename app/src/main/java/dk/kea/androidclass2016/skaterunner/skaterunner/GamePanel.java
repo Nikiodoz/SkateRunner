@@ -22,6 +22,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     //reference
     private MainThread thread;
     private Background bg;
+    private Blocks bs;
 
     //constructor (automatically called when you create/construct the object)
     public GamePanel(Context context)
@@ -45,6 +46,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         //instatiate, get the image and pass it into the Background class constructor
         bg = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.sktbg));
 
+        //block...
         //will make the image slowly move off the screen
         bg.setVector(-5);
 
@@ -93,6 +95,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     {
         //update the background
         bg.update();
+        //block...
     }
 
     //we want to draw the background
@@ -119,5 +122,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             //it will just keep scaling, everytime we call the draw method.
             canvas.restoreToCount(savedState);
         }
+
+        //block...
     }
 }
