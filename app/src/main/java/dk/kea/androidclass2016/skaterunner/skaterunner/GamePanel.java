@@ -3,6 +3,7 @@ package dk.kea.androidclass2016.skaterunner.skaterunner;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -26,8 +27,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     //reference
     private MainThread thread;
     private Background bg;
+    private long skatesileStartTime;
     private Blocks bs;
     private Player pl;
+    private ArrayList <Skatesile> skatesile;
     private ArrayList<Blocks> blocks;
     private ArrayList<BlocksSecond> secondBlocks;
     private Random rand = new Random();
@@ -59,6 +62,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         //instatiate, get the image and pass it into the Background class constructor
         bg = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.skatebg));
         pl = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.player), 65, 20, 4);
+        skatesile = new ArrayList<Skatesile>();
+        skatesileStartTime = System.nanoTime();
 
         blocks = new ArrayList<Blocks>();
         secondBlocks = new ArrayList<BlocksSecond>();
@@ -146,6 +151,45 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             //only update the player, if the player is playing.
             pl.update();
 
+            //add skatesile on timer
+            long skatesileElapsed = (System.nanoTime() - skatesileStartTime) / 1000000;
+            if(skatesileElapsed >(2000 - pl.getScore() / 4)) // the higher the player score is the less delay time is needed to launch new skatesile
+            {
+                //first skatesile always goes down the middle
+                if(skatesile.size() == 0)
+                {
+                    skatesile.add(new Skatesile(BitmapFactory.decodeResource(getResources(), R.drawable.
+                            bomb), WIDTH + 10, HEIGHT / 2, 45, 15, pl.getScore(), 13));
+                }
+                else
+                {
+                    skatesile.add(new Skatesile(BitmapFactory.decodeResource(getResources(),R.drawable.bomb),
+                            WIDTH + 10, (int) (rand.nextDouble() * (HEIGHT)), 45, 15, pl.getScore(), 13));
+                }
+
+                skatesileStartTime = System.nanoTime(); //reset timer
+            }
+            //loop through every skatesile and check collision and remove
+            for(int i = 0; i<skatesile.size(); i++)
+            {
+                //update skatesile
+                skatesile.get(i).update();
+                if(collision(skatesile.get(i), pl)) //collsion method takes 2 par, 2 game objects
+                {
+                    skatesile.remove(i);
+                    pl.setPlaying(false);
+                    break; //break out of the loop
+                }
+                //remove skatesile if it is way off the screen
+                if(skatesile.get(i).getX() <-100)
+                {
+                    skatesile.remove(i);
+                    break;
+                }
+            }
+
+            //add smoke puffs on timer
+
             //calculate the threshold of height the blocks can have based on the score
             //max and min block heart are update, and the blocks switched direction when either
             //min is met
@@ -173,6 +217,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    public boolean collision(GameObject a, GameObject b) //return if gameobject a & b is colliding
+    {
+        if(Rect.intersects(a.getRectangle(), b.getRectangle()))
+        {
+            return true;
+        }
+        return false;
+    }
+
     //we want to draw the background
     //but we have to @Override the draw() from the surfaceView class
     @Override
@@ -185,6 +238,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         //of the entire phone screen(surfaceView)
         final float scaleFactorX = getWidth() / (WIDTH * 1.f);
         final float scaleFactorY = getHeight() / (HEIGHT * 1.f);
+
         if (canvas != null)
         {
             //Before we scale, we create a savedState for our canvas
@@ -195,6 +249,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             bg.draw(canvas);
             //draw the player
             pl.draw(canvas);
+
+            //draw Skatesile
+            for(Skatesile s: skatesile)
+            {
+                s.draw(canvas);
+            }
+
+
             //now we return to the savedState(the unscaled state), because if we don't
             //it will just keep scaling, everytime we call the draw method.
             canvas.restoreToCount(savedState);
