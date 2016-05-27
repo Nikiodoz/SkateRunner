@@ -62,4 +62,11 @@ public class Skatesile extends GameObject
             (Exception e){
         }
     }
+
+    public int getWidth()
+    {
+        //offset slightly for more realistic collision detect
+        return width - 10;
+    }
+
 }
