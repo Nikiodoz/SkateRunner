@@ -31,6 +31,6 @@ public class Blocks extends GameObject
     public void draw(Canvas canvas)
     {
         //try(canvas.drawBitmap(image, x, y, null);} catch(Exception e) {};
-        try{canvas.drawBitmap(image,x,y,null);} catch(Exception e) {};
+        try {canvas.drawBitmap(image, x, y, null);} catch(Exception e) {};
     }
 }

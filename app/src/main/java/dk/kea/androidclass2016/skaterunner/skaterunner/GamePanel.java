@@ -146,8 +146,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             //only update the player, if the player is playing.
             pl.update();
 
-            //calculate the threshold of height the border can have based on the score
-            //max and min block heart are update, and the border switched direction when either
+            //calculate the threshold of height the blocks can have based on the score
+            //max and min block heart are update, and the blocks switched direction when either
             //min is met
 
             maxBlockHeight = 30 + pl.getScore() / progressDenom;
@@ -222,7 +222,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             //0 is the y position
             //x is the last block in the arraylist + 20
             //height of third parameter will be a random number from the maxBlockHeight
-            blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(), R.drawable.skateblock
+            blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(), R.drawable.skateblocksecond
             ), blocks.get(blocks.size() -1) .getX() +20, 0,(int) ((rand.nextDouble() * (maxBlockHeight
             ))+1)));
         }
@@ -249,14 +249,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
                 {
 
                     blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(),
-                            R.drawable.skateblock), blocks.get(blocks.size() -1 ).getX() + 20,
+                            R.drawable.skateblocksecond), blocks.get(blocks.size() -1 ).getX() + 20,
                             0, blocks.get(blocks.size() -1 ).getHeight() + 1));
                 }
                 //new block added will have smaller height
                 else
                 {
                     blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(),
-                            R.drawable.skateblock), blocks.get(blocks.size() -1 ).getX() + 20,
+                            R.drawable.skateblocksecond), blocks.get(blocks.size() -1 ).getX() + 20,
                             0, blocks.get(blocks.size() -1 ).getHeight() - 1));
                 }
             }
@@ -267,7 +267,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         //every 40 points, insert randomly placed bottom blocks
         if(pl.getScore() % 40 == 0)
         {
-            secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblock),
+            secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblocksecond),
                     secondBlocks.get(secondBlocks.size() -1).getX() + 20, (int) ((rand.nextDouble()
             * maxBlockHeight) + (HEIGHT - maxBlockHeight))));
         }
@@ -300,7 +300,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
                     // X position is + 20 the last in the array (width is 20)
                     // Y position is the last element of the array (most recent) + 1
                     //moving downwards, upwards...
-                    secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblock
+                    secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblocksecond
                     ), secondBlocks.get(secondBlocks.size() - 1).getX() + 20, secondBlocks.get(secondBlocks.size() - 1
                     ).getY() + 1));
                 }
@@ -340,12 +340,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             if (i == 0)
             {
                 //create 1 element of the block for the first
-                blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(), R.drawable.skateblock
+                blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(), R.drawable.skateblocksecond
                 ), i * 20, 0, 10));
             } else
             {
                 //get the last element of the array, get the height of the last element of the array and add +1
-                blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(), R.drawable.skateblock
+                blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(), R.drawable.skateblocksecond
                 ), i * 20, 0, blocks.get(i - 1).getHeight() + 1));
             }
         }
@@ -357,7 +357,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             //first blocks ever created
             if (i == 0)
             {
-                secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblock)
+                secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblocksecond)
                         , i * 20, HEIGHT - minBlockHeight));
             }
             //adding blocks until the initial screen is filed
