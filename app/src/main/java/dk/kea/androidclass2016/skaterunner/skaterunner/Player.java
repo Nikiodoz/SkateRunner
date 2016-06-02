@@ -75,15 +75,18 @@ public class Player extends GameObject
         //else we slow down
         else
         {
-
-            //Here we cap the speed of the player
-            if (dy > 8) dy = 8;
-            if (dy < -8) dy = -8;
-
-            y += dy * 2;
-            dy = 0;
+            dy = (int) (dya += 1.1);
         }
+
+        //Here we cap the speed of the player
+        if (dy > 8) dy = 8;
+        if (dy < -8) dy = -8;
+
+        y += dy * 2;
+        dy = 0;
     }
+
+
 
     public void draw(Canvas canvas)
     {
