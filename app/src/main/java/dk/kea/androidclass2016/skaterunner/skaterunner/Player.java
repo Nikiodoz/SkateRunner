@@ -70,17 +70,17 @@ public class Player extends GameObject
         //If we press up, we should accelerate
         if (up)
         {
-            dy = (int) (dya -= 0);
+            dy = (int) (dya -= 1.1);
         }
         //else we slow down
         else
         {
-            dy = (int) (dya += 4);
+            dy = (int) (dya += 1.1);
         }
 
         //Here we cap the speed of the player
-        if (dy > 5) dy = 5;
-        if (dy < -5) dy = -5;
+        if (dy > 8) dy = 8;
+        if (dy < -8) dy = -8;
 
         y += dy * 2;
         dy = 0;

@@ -20,8 +20,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 {
 
     //Dimenensions of our game
-    public static final int WIDTH = 600;
-    public static final int HEIGHT = 300;
+    public static final int WIDTH = 1600;
+    public static final int HEIGHT = 900;
     public static final int MOVESPEED = -5;
 
     //reference
@@ -61,9 +61,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder)
     {
         //instatiate, get the image and pass it into the Background class constructor
-        bg = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.skatebg));
+        bg = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.sktbg));
 
-        pl = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.character), 50, 60, 1);
+        pl = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.skatecharacter), 60, 80, 1);
 
         skatesile = new ArrayList<Skatesile>();
         skatesileStartTime = System.nanoTime();
