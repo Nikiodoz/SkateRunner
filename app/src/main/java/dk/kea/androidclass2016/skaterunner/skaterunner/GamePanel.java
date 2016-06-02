@@ -62,7 +62,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     {
         //instatiate, get the image and pass it into the Background class constructor
         bg = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.skatebg));
+
         pl = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.character), 50, 60, 1);
+
         skatesile = new ArrayList<Skatesile>();
         skatesileStartTime = System.nanoTime();
 
