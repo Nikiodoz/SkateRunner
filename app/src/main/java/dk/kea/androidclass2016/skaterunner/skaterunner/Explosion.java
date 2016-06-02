@@ -14,7 +14,7 @@ public class Explosion
     private int height;
     private int row;
     private Animation animation = new Animation();
-    private Bitmap spritesheet; // Mangler lige pt
+    private Bitmap spritesheet;
 
 
     public Explosion(Bitmap res, int x, int y, int w, int h, int numFrames){

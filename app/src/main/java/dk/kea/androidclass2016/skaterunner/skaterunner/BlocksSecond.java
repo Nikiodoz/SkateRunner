@@ -5,6 +5,8 @@ import android.graphics.Canvas;
 
 /**
  * Created by Ahmed on 25-05-2016.
+ *
+ * this is bottom border.
  */
 public class BlocksSecond extends GameObject
 {

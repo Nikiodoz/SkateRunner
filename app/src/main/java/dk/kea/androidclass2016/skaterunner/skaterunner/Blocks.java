@@ -5,6 +5,8 @@ import android.graphics.Canvas;
 
 /**
  * Created by Ahmed on 25-05-2016.
+ *
+ * This class is the top border.
  */
 public class Blocks extends GameObject
 {
@@ -30,7 +32,7 @@ public class Blocks extends GameObject
 
     public void draw(Canvas canvas)
     {
-        //try(canvas.drawBitmap(image, x, y, null);} catch(Exception e) {};
+
         try {canvas.drawBitmap(image, x, y, null);} catch(Exception e) {};
     }
 }

@@ -84,11 +84,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         secondBlocks = new ArrayList<BlocksSecond>();
         //will make the image slowly move off the screen
 
+        thread = new MainThread(getHolder(), this);
 
         //we can safely start the game loop
         thread.setRunning(true);
         thread.start();
-        thread = null;
+
 
     }
 
@@ -103,22 +104,28 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         //stop the thread when the surface is "destroyed".
         boolean retry = true;
 
+        int counter = 0;
+
         //sometimes it can take multiple attempts to stop the thread.
         //so we put it in a loop and a try/catch.
-        while (retry)
+        while (retry && counter<1000)
         {
             //try to stop the thread. set it running to false.
             //if it doesn't succeed, it will go to the catch block and loop will retry.
             //if it does succeed it will skip the catch block and set retry = false.
+            counter++;
             try
             {
-                thread.setRunning(false);
                 thread.join();
+                thread.setRunning(false);
+                thread = null;
+
+
             } catch (InterruptedException e)
             {
                 e.printStackTrace();
             }
-            retry = false;
+
         }
     }
 
@@ -133,6 +140,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             if (!pl.getPlaying() && newGameCreated && reset)
             {
                 pl.setPlaying(true);
+                pl.setUp(true);
             }
             //If the player is already playing.
 
@@ -143,7 +151,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
                 pl.setUp(true);
             }
 
-            pl.setUp(true);
 
             return true;
         }
@@ -162,30 +169,58 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     public void update()
     {
 
-        if(blocks.isEmpty())
-        {
-
-            pl.setPlaying(false);
-            return;
-        }
-
-        if(secondBlocks.isEmpty())
-        {
-            pl.setUp(false);
-            return;
-
-        }
-
-        //update the background
-        bg.update();
-
         //We are only going to update the background, if the player is playing
         if (pl.getPlaying())
         {
+
+
+            if (blocks.isEmpty())
+            {
+
+                pl.setPlaying(false);
+                return;
+            }
+
+            if (secondBlocks.isEmpty())
+            {
+                pl.setUp(false);
+                return;
+
+            }
             //update the background
             bg.update();
             //only update the player, if the player is playing.
             pl.update();
+
+            maxBlockHeight = 30 + pl.getScore() / progressDenom;
+            //cap max block height so that blocks can only take up a total of 1/2 the screen
+            if (maxBlockHeight > HEIGHT / 4) maxBlockHeight = HEIGHT / 4;
+            minBlockHeight = 5 + pl.getScore() / progressDenom;
+
+
+            //Collision check for bottom border
+            for(int i = 0; i <secondBlocks.size(); i++)
+            {
+                if(collision(secondBlocks.get(i), pl))
+                    pl.setPlaying(false);
+            }
+
+            //collision check for top border
+
+            for(int i = 0; i<blocks.size(); i++)
+            {
+                if(collision(blocks.get(i), pl))
+                    pl.setPlaying(false);
+            }
+
+
+
+            //update top blocks
+            this.updateTopBlock();
+
+            //update bottom blocks
+            this.updateBottomBlock();
+
 
             //add skatesile on timer
             long skatesileElapsed = (System.nanoTime() - skatesileStartTime) / 1000000;
@@ -223,29 +258,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
                 }
             }
 
-            //add smoke puffs on timer
 
-            //calculate the threshold of height the blocks can have based on the score
-            //max and min block heart are update, and the blocks switched direction when either
-            //min is met
-
-            maxBlockHeight = 30 + pl.getScore() / progressDenom;
-            //cap max block height so that blocks can only take up a total of 1/2 the screen
-            if (maxBlockHeight > HEIGHT / 4) maxBlockHeight = HEIGHT / 4;
-            minBlockHeight = 5 + pl.getScore() / progressDenom;
-            //update top blocks
-            this.updateTopBlock();
-
-            //update bottom blocks
-            this.updateBottomBlock();
         }
         //if the player no longer playing cause of collide...
 
         else
         //as soon as the player collides with something, pl.setPlaying will be set to false, making it stop playing
         {
-            //player collied.. newgameCreated false, beacise it's false it calls newGame, newgameCreated becomes true... repeat while player not playing
-
+            //player collied.. newgameCreated false, because it's false it calls newGame, newgameCreated becomes true... repeat while player not playing
 
             pl.resetDYA();// resetting the accaleration of the player
             if(!reset){
@@ -259,6 +279,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             }
 
             explosion.update();
+
             long resetElapsed = (System.nanoTime()- startReset)/1000000; //How long waiting for player reset is going to happen
             if(resetElapsed > 2500 && !newGameCreated){
 
@@ -348,7 +369,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
             canvas.restoreToCount(savedState);
 
-            
+
 
         }
 
@@ -426,14 +447,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
 
                 //determine if block will be moving up or down
-                if (secondBlocks.get(secondBlocks.size() - 1).getHeight() >= maxBlockHeight)
-                {
-                    botDown = false;
-                }
-                // if the last element is greater than the max or less than block height, we'll adjust topDown so blocks will go the right direction
-                if (secondBlocks.get(secondBlocks.size() - 1).getHeight() <= minBlockHeight)
+                if (secondBlocks.get(secondBlocks.size() - 1).getY() <= maxBlockHeight)
                 {
                     botDown = true;
+                }
+                // if the last element is greater than the max or less than block height, we'll adjust topDown so blocks will go the right direction
+                if (secondBlocks.get(secondBlocks.size() - 1).getY() >= minBlockHeight)
+                {
+                    botDown = false;
                 }
 
                 //botDown adding blocks is 1 less from the last block from the array
@@ -451,7 +472,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
                 else
                 {
                     //moving upwards
-                    secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblock
+                    secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblocksecond
                     ), secondBlocks.get(secondBlocks.size() - 1).getX() + 20, secondBlocks.get(secondBlocks.size() - 1
                     ).getY() - 1));
                 }
@@ -485,7 +506,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         //loop create blocks till width + 40 off screen
 
         //initial top blocks
-        for (int i = 0; i * 20 < WIDTH * 40; i++)
+        for (int i = 0; i * 20 < WIDTH + 40; i++)
         {
             //first block created
             if (i == 0)
@@ -514,7 +535,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             //adding blocks until the initial screen is filed
             else
             {
-                secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblock),
+                secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblocksecond),
                         i * 20, secondBlocks.get(i - 1).getY() - 1));
             }
 
