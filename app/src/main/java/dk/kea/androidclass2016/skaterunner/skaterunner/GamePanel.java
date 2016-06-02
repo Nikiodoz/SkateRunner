@@ -381,8 +381,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     public void newGame()
     {
         //called everytime the player dies and then reset the game
-        blocks.clear();
-        secondBlocks.clear();
+        blocks.clear(); //top blocks
+        secondBlocks.clear(); //bottom blocks
 
 
         minBlockHeight = 5;

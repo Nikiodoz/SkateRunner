@@ -75,7 +75,7 @@ public class Player extends GameObject
         //else we slow down
         else
         {
-            dy = (int) (dya += 4);
+            dy = (int) (dya += 2);
         }
 
         //Here we cap the speed of the player
