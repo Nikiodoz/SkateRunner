@@ -12,8 +12,6 @@ public class Player extends GameObject
     //player will use a spritesheet
     private Bitmap spritesheet;
     private int score;
-    //acceleration (extra variable)
-    private double dya;
     private boolean up;
     private boolean playing;
     private Animation animation = new Animation();
@@ -70,12 +68,12 @@ public class Player extends GameObject
         //If we press up, we should accelerate
         if (up)
         {
-            dy = (int) (dya -= 1.1);
+            dy -= 1;
         }
         //else we slow down
         else
         {
-            dy = (int) (dya += 1.1);
+            dy += 1;
         }
 
         //Here we cap the speed of the player
@@ -83,7 +81,6 @@ public class Player extends GameObject
         if (dy < -8) dy = -8;
 
         y += dy * 2;
-        dy = 0;
     }
 
 
@@ -110,7 +107,7 @@ public class Player extends GameObject
 
     public void resetDYA()
     {
-        dya = 0;
+        dy = 0;
     }
 
     public void resetScore()
