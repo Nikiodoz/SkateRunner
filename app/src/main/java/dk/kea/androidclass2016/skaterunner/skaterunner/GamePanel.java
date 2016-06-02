@@ -3,7 +3,10 @@ package dk.kea.androidclass2016.skaterunner.skaterunner;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -40,6 +43,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     private boolean topDown = true;
     private boolean botDown = true;
     private boolean newGameCreated;
+    private Explosion explosion;
+    private long startReset;
+    private boolean reset;
+    private  boolean dissapear;
+    private boolean started;
+    private int best;
     //constructor (automatically called when you create/construct the object)
     public GamePanel(Context context)
     {
@@ -48,15 +57,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         //add the callback to the SurfaceHolder to intercepts events
         getHolder().addCallback(this);
 
-        //instantiate Thread.
-        //we are passing getHolder() to it and "THIS" gamePanel.
-        thread = new MainThread(getHolder(), this);
 
         //make gamePanel focusable so it can handle events
         setFocusable(true);
     }
 
+
+
     @Override
+
     public void surfaceCreated(SurfaceHolder holder)
     {
         //instatiate, get the image and pass it into the Background class constructor
@@ -64,6 +73,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         pl = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.player), 65, 20, 4);
         skatesile = new ArrayList<Skatesile>();
         skatesileStartTime = System.nanoTime();
+
+        thread = new MainThread(getHolder(), this);
 
         blocks = new ArrayList<Blocks>();
         secondBlocks = new ArrayList<BlocksSecond>();
@@ -73,6 +84,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         //we can safely start the game loop
         thread.setRunning(true);
         thread.start();
+        thread = null;
 
     }
 
@@ -114,14 +126,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         if (event.getAction() == MotionEvent.ACTION_DOWN)
         {
             //This is the first time pressing down, which means the player is not playing yet.
-            if (!pl.getPlaying())
+            if (!pl.getPlaying() && newGameCreated && reset)
             {
                 pl.setPlaying(true);
                 //pl.setUp(true);
             }
             //If the player is already playing.
-            else
+            if(pl.getPlaying())
             {
+                if(!started)started = true;
+                reset=false;
                 pl.setForward(true);
             }
             return true;
@@ -140,6 +154,21 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
     public void update()
     {
+
+        if(blocks.isEmpty())
+        {
+
+            pl.setPlaying(false);
+            return;
+        }
+
+        if(secondBlocks.isEmpty())
+        {
+            pl.setForward(false);
+            return;
+
+        }
+
         //update the background
         bg.update();
 
@@ -205,10 +234,31 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             this.updateBottomBlock();
         }
         //if the player no longer playing cause of collide...
+
         else
+        //as soon as the player collides with something, pl.setPlaying will be set to false, making it stop playing
         {
             //player collied.. newgameCreated false, beacise it's false it calls newGame, newgameCreated becomes true... repeat while player not playing
-            newGameCreated = false;
+
+            pl.resetDYA();// resetting the accaleration of the player
+            if(!reset){
+                //if not reset the startReset will be the current time instead
+                newGameCreated = false;
+                startReset = System.nanoTime();
+                reset = true;
+                dissapear = true;
+                explosion = new Explosion(BitmapFactory.decodeResource(getResources(), R.drawable.explosion), pl.getX(),
+                        pl.getY()-30, 100,100,25);
+            }
+
+            explosion.update();
+            long resetElapsed = (System.nanoTime()- startReset)/1000000; //How long waiting for player reset is going to happen
+            if(resetElapsed > 2500 && !newGameCreated){
+
+
+                newGame();
+            }
+
             if(!newGameCreated)
             {
                 newGame();
@@ -239,7 +289,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         final float scaleFactorX = getWidth() / (WIDTH * 1.f);
         final float scaleFactorY = getHeight() / (HEIGHT * 1.f);
 
-        if (canvas != null)
+        if (canvas!= null)
         {
             //Before we scale, we create a savedState for our canvas
             final int savedState = canvas.save();
@@ -248,7 +298,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             //then we draw the background
             bg.draw(canvas);
             //draw the player
-            pl.draw(canvas);
+            if(!dissapear)
+            {
+                pl.draw(canvas);
+            }
 
             //draw Skatesile
             for(Skatesile s: skatesile)
@@ -259,20 +312,32 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
             //now we return to the savedState(the unscaled state), because if we don't
             //it will just keep scaling, everytime we call the draw method.
+
+
+            //draw first/topblocks
+            for(Blocks block: blocks)
+            {
+                block.draw(canvas);
+            }
+
+            //draw second/bottom blocks
+            for(BlocksSecond bs: secondBlocks)
+            {
+                bs.draw(canvas);
+            }
+
+            //draw Explosion
+
+            if(started)
+            {
+                explosion.draw(canvas);
+            }
+
+            drawText(canvas);
+
             canvas.restoreToCount(savedState);
         }
 
-        //draw first/topblocks
-        for(Blocks block: blocks)
-        {
-            block.draw(canvas);
-        }
-
-        //draw second/bottom blocks
-        for(BlocksSecond bs: secondBlocks)
-        {
-            bs.draw(canvas);
-        }
     }
 
     public void updateTopBlock()
@@ -380,6 +445,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     }
     public void newGame()
     {
+
+        dissapear = false; // We want the player to appear again after creation
         //called everytime the player dies and then reset the game
         blocks.clear();
         secondBlocks.clear();
@@ -390,6 +457,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         pl.resetDYA();
         pl.resetScore(); //reset score
         pl.setY(HEIGHT / 2); //reset player position
+
+        if(pl.getScore() > best)
+        {
+
+            best = pl.getScore();
+        }
 
         //create initial blocks
 
@@ -432,6 +505,30 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         }
         newGameCreated = true;
 
+
+    }
+    public  void drawText(Canvas canvas){
+
+
+        //Setting the attributes fot the text
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(30);
+        paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        canvas.drawText("DISTANCE:" + (pl.getScore() * 3), 10, HEIGHT - 10, paint);
+        canvas.drawText("BEST: " + best, WIDTH - 215, HEIGHT - 10, paint);
+
+        if(!pl.getPlaying() && newGameCreated && reset)//Settings for basic instructions
+        {
+            Paint paint1 = new Paint();
+            paint1.setTextSize(40);
+            paint1.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+            canvas.drawText("PRESS TO START", WIDTH / 2 - 50, HEIGHT / 2, paint1);
+
+            paint1.setTextSize(20);
+            canvas.drawText("PRESS AND HOLD TO GO UP", WIDTH/2-50, HEIGHT/2 + 20, paint1);
+            canvas.drawText("RELEASE TO GO DOWN", WIDTH/2-50, HEIGHT/2 + 20, paint1);
+        }
 
     }
 }
