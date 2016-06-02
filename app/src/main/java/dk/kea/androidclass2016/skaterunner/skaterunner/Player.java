@@ -14,7 +14,7 @@ public class Player extends GameObject
     private int score;
     //acceleration (extra variable)
     private double dya;
-    private boolean forward;
+    private boolean up;
     private boolean playing;
     private Animation animation = new Animation();
     //use to increment the score
@@ -50,9 +50,9 @@ public class Player extends GameObject
 
     //This method is going to be called by the motionEvent,
     //when we press forward the player will go forward
-    public void setForward(boolean b)
+    public void setUp(boolean b)
     {
-        forward = b;
+        up = b;
     }
 
     public void update()
@@ -67,8 +67,8 @@ public class Player extends GameObject
 
         animation.update();
 
-        //If we press forward, we should accelerate
-        if (forward)
+        //If we press up, we should accelerate
+        if (up)
         {
             dy = (int) (dya -= 1.1);
         }
@@ -79,12 +79,14 @@ public class Player extends GameObject
         }
 
         //Here we cap the speed of the player
-        if (dy > 14) dy = 14;
-        if (dy < -14) dy = -14;
+        if (dy > 8) dy = 8;
+        if (dy < -8) dy = -8;
 
         y += dy * 2;
         dy = 0;
     }
+
+
 
     public void draw(Canvas canvas)
     {

@@ -37,7 +37,7 @@ public class Skatesile extends GameObject
         spritesheet = res;
 
         //loop through the images
-        for(int i = 9; i<image.length; i++)
+        for(int i = 0; i<image.length; i++)
         {
             image[i] = Bitmap.createBitmap(spritesheet, 0, i * height, width, height);
         }

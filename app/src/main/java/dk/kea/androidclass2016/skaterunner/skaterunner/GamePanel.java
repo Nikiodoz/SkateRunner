@@ -23,8 +23,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 {
 
     //Dimenensions of our game
-    public static final int WIDTH = 600;
-    public static final int HEIGHT = 300;
+    public static final int WIDTH = 1600;
+    public static final int HEIGHT = 900;
     public static final int MOVESPEED = -5;
 
     //reference
@@ -33,7 +33,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     private long skatesileStartTime;
     private Blocks bs;
     private Player pl;
-    private ArrayList <Skatesile> skatesile;
+    private ArrayList<Skatesile> skatesile;
     private ArrayList<Blocks> blocks;
     private ArrayList<BlocksSecond> secondBlocks;
     private Random rand = new Random();
@@ -43,12 +43,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     private boolean topDown = true;
     private boolean botDown = true;
     private boolean newGameCreated;
+
     private Explosion explosion;
     private long startReset;
     private boolean reset;
     private  boolean dissapear;
     private boolean started;
     private int best;
+
     //constructor (automatically called when you create/construct the object)
     public GamePanel(Context context)
     {
@@ -69,8 +71,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder)
     {
         //instatiate, get the image and pass it into the Background class constructor
-        bg = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.skatebg));
-        pl = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.player), 65, 20, 4);
+        bg = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.sktbg));
+
+        pl = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.skatecharacter), 60, 80, 1);
+
         skatesile = new ArrayList<Skatesile>();
         skatesileStartTime = System.nanoTime();
 
@@ -129,15 +133,18 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             if (!pl.getPlaying() && newGameCreated && reset)
             {
                 pl.setPlaying(true);
-                //pl.setUp(true);
             }
             //If the player is already playing.
+
             if(pl.getPlaying())
             {
                 if(!started)started = true;
                 reset=false;
-                pl.setForward(true);
+                pl.setUp(true);
             }
+
+            pl.setUp(true);
+
             return true;
         }
 
@@ -145,7 +152,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         if (event.getAction() == MotionEvent.ACTION_UP)
         {
             //you are no longer going up, so set it to false
-            pl.setForward(false);
+            pl.setUp(false);
             return true;
         }
 
@@ -164,7 +171,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
         if(secondBlocks.isEmpty())
         {
-            pl.setForward(false);
+            pl.setUp(false);
             return;
 
         }
@@ -182,35 +189,34 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
             //add skatesile on timer
             long skatesileElapsed = (System.nanoTime() - skatesileStartTime) / 1000000;
-            if(skatesileElapsed >(2000 - pl.getScore() / 4)) // the higher the player score is the less delay time is needed to launch new skatesile
+            if (skatesileElapsed > (2000 - pl.getScore() / 4)) // the higher the player score is the less delay time is needed to launch new skatesile
             {
                 //first skatesile always goes down the middle
-                if(skatesile.size() == 0)
+                if (skatesile.size() == 0)
                 {
                     skatesile.add(new Skatesile(BitmapFactory.decodeResource(getResources(), R.drawable.
                             bomb), WIDTH + 10, HEIGHT / 2, 45, 15, pl.getScore(), 13));
-                }
-                else
+                } else
                 {
-                    skatesile.add(new Skatesile(BitmapFactory.decodeResource(getResources(),R.drawable.bomb),
+                    skatesile.add(new Skatesile(BitmapFactory.decodeResource(getResources(), R.drawable.bomb),
                             WIDTH + 10, (int) (rand.nextDouble() * (HEIGHT)), 45, 15, pl.getScore(), 13));
                 }
 
                 skatesileStartTime = System.nanoTime(); //reset timer
             }
             //loop through every skatesile and check collision and remove
-            for(int i = 0; i<skatesile.size(); i++)
+            for (int i = 0; i < skatesile.size(); i++)
             {
                 //update skatesile
                 skatesile.get(i).update();
-                if(collision(skatesile.get(i), pl)) //collsion method takes 2 par, 2 game objects
+                if (collision(skatesile.get(i), pl)) //collsion method takes 2 par, 2 game objects
                 {
                     skatesile.remove(i);
                     pl.setPlaying(false);
                     break; //break out of the loop
                 }
                 //remove skatesile if it is way off the screen
-                if(skatesile.get(i).getX() <-100)
+                if (skatesile.get(i).getX() < -100)
                 {
                     skatesile.remove(i);
                     break;
@@ -225,7 +231,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
             maxBlockHeight = 30 + pl.getScore() / progressDenom;
             //cap max block height so that blocks can only take up a total of 1/2 the screen
-            if(maxBlockHeight > HEIGHT / 4)maxBlockHeight = HEIGHT/4;
+            if (maxBlockHeight > HEIGHT / 4) maxBlockHeight = HEIGHT / 4;
             minBlockHeight = 5 + pl.getScore() / progressDenom;
             //update top blocks
             this.updateTopBlock();
@@ -239,6 +245,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         //as soon as the player collides with something, pl.setPlaying will be set to false, making it stop playing
         {
             //player collied.. newgameCreated false, beacise it's false it calls newGame, newgameCreated becomes true... repeat while player not playing
+
 
             pl.resetDYA();// resetting the accaleration of the player
             if(!reset){
@@ -260,6 +267,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             }
 
             if(!newGameCreated)
+
+            newGameCreated = false;
+            if (!newGameCreated)
+
             {
                 newGame();
             }
@@ -269,7 +280,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
     public boolean collision(GameObject a, GameObject b) //return if gameobject a & b is colliding
     {
-        if(Rect.intersects(a.getRectangle(), b.getRectangle()))
+        if (Rect.intersects(a.getRectangle(), b.getRectangle()))
         {
             return true;
         }
@@ -289,7 +300,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         final float scaleFactorX = getWidth() / (WIDTH * 1.f);
         final float scaleFactorY = getHeight() / (HEIGHT * 1.f);
 
-        if (canvas!= null)
+        if (canvas != null)
         {
             //Before we scale, we create a savedState for our canvas
             final int savedState = canvas.save();
@@ -298,13 +309,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             //then we draw the background
             bg.draw(canvas);
             //draw the player
-            if(!dissapear)
+            if (!dissapear)
             {
                 pl.draw(canvas);
             }
 
             //draw Skatesile
-            for(Skatesile s: skatesile)
+            for (Skatesile s : skatesile)
             {
                 s.draw(canvas);
             }
@@ -315,20 +326,20 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
 
             //draw first/topblocks
-            for(Blocks block: blocks)
+            for (Blocks block : blocks)
             {
                 block.draw(canvas);
             }
 
             //draw second/bottom blocks
-            for(BlocksSecond bs: secondBlocks)
+            for (BlocksSecond bs : secondBlocks)
             {
                 bs.draw(canvas);
             }
 
             //draw Explosion
 
-            if(started)
+            if (started)
             {
                 explosion.draw(canvas);
             }
@@ -336,6 +347,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             drawText(canvas);
 
             canvas.restoreToCount(savedState);
+
+            
+
         }
 
     }
@@ -343,69 +357,70 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     public void updateTopBlock()
     {
         //every 50 points, insert randomly placed top blocks that break the pattern
-        if(pl.getScore() % 50 == 0)
+        if (pl.getScore() % 50 == 0)
         {
             //blocks.size -1 is the last block in the array added with + 20
             //0 is the y position
             //x is the last block in the arraylist + 20
             //height of third parameter will be a random number from the maxBlockHeight
             blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(), R.drawable.skateblocksecond
-            ), blocks.get(blocks.size() -1) .getX() +20, 0,(int) ((rand.nextDouble() * (maxBlockHeight
-            ))+1)));
+            ), blocks.get(blocks.size() - 1).getX() + 20, 0, (int) ((rand.nextDouble() * (maxBlockHeight
+            )) + 1)));
         }
-        for(int i = 0; i <blocks.size(); i++)
+        for (int i = 0; i < blocks.size(); i++)
         {
             blocks.get(i).update();
-            if(blocks.get(i).getX() <- 20) //if blocks(top) looping has an x position negative 20 will be removed
+            if (blocks.get(i).getX() < -20) //if blocks(top) looping has an x position negative 20 will be removed
             {
                 blocks.remove(i);
                 //remove element of arraylist, replace by adding new one
 
                 //calculate topdown which determines the direction the border is moving (up or down)
-                if(blocks.get(blocks.size() - 1).getHeight() >= maxBlockHeight)
+                if (blocks.get(blocks.size() - 1).getHeight() >= maxBlockHeight)
                 {
                     topDown = false;
                 }
                 // if the last element is greater than the max or less than block height, we'll adjust topDown so blocks will go the right direction
-                if(blocks.get(blocks.size() -1).getHeight() <= minBlockHeight)
+                if (blocks.get(blocks.size() - 1).getHeight() <= minBlockHeight)
                 {
                     topDown = true;
                 }
                 //new block added will have larger height
-                if(topDown)
+                if (topDown)
                 {
 
                     blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(),
-                            R.drawable.skateblocksecond), blocks.get(blocks.size() -1 ).getX() + 20,
-                            0, blocks.get(blocks.size() -1 ).getHeight() + 1));
+                            R.drawable.skateblocksecond), blocks.get(blocks.size() - 1).getX() + 20,
+                            0, blocks.get(blocks.size() - 1).getHeight() + 1));
                 }
                 //new block added will have smaller height
                 else
                 {
                     blocks.add(new Blocks(BitmapFactory.decodeResource(getResources(),
-                            R.drawable.skateblocksecond), blocks.get(blocks.size() -1 ).getX() + 20,
-                            0, blocks.get(blocks.size() -1 ).getHeight() - 1));
+                            R.drawable.skateblocksecond), blocks.get(blocks.size() - 1).getX() + 20,
+                            0, blocks.get(blocks.size() - 1).getHeight() - 1));
                 }
             }
         }
     }
+
     public void updateBottomBlock()
     {
         //every 40 points, insert randomly placed bottom blocks
-        if(pl.getScore() % 40 == 0)
+        if (pl.getScore() % 40 == 0)
         {
             secondBlocks.add(new BlocksSecond(BitmapFactory.decodeResource(getResources(), R.drawable.skateblocksecond),
-                    secondBlocks.get(secondBlocks.size() -1).getX() + 20, (int) ((rand.nextDouble()
-            * maxBlockHeight) + (HEIGHT - maxBlockHeight))));
+                    secondBlocks.get(secondBlocks.size() - 1).getX() + 20, (int) ((rand.nextDouble()
+                    * maxBlockHeight) + (HEIGHT - maxBlockHeight))));
         }
 
         //update bottom blocks
-        for(int i = 0; i <secondBlocks.size(); i++)
+        for (int i = 0; i < secondBlocks.size(); i++)
         {
             secondBlocks.get(i).update();
 
             //if block is moving off screen, remove it and add a new one
-            if(secondBlocks.get(i).getX() <- 20)
+            if (secondBlocks.get(i).getX() < -20)
             {
                 secondBlocks.remove(i);
 
@@ -443,13 +458,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             }
         }
     }
+
     public void newGame()
     {
 
         dissapear = false; // We want the player to appear again after creation
         //called everytime the player dies and then reset the game
-        blocks.clear();
-        secondBlocks.clear();
+        blocks.clear(); //top blocks
+        secondBlocks.clear(); //bottom blocks
 
 
         minBlockHeight = 5;
