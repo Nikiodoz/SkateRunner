@@ -155,11 +155,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             long skatesileElapsed = (System.nanoTime() - skatesileStartTime) / 1000000;
             if(skatesileElapsed >(2000 - pl.getScore() / 4)) // the higher the player score is the less delay time is needed to launch new skatesile
             {
+                System.out.println("making skatesile");
                 //first skatesile always goes down the middle
                 if(skatesile.size() == 0)
                 {
                     skatesile.add(new Skatesile(BitmapFactory.decodeResource(getResources(), R.drawable.
-                            bomb), WIDTH + 10, HEIGHT / 2, 45, 15, pl.getScore(), 13));
+                            bomb), WIDTH + 10, HEIGHT / 2, 45, 1, pl.getScore(), 13));
                 }
                 else
                 {
@@ -174,6 +175,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
             {
                 //update skatesile
                 skatesile.get(i).update();
+
                 if(collision(skatesile.get(i), pl)) //collsion method takes 2 par, 2 game objects
                 {
                     skatesile.remove(i);
